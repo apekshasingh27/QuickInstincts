@@ -11,22 +11,24 @@
     <div class="card" id="card">
       <div class="card-inner" id="card-inner">
         <div class="card-front" id="hidden-number-front">
-          <h2>What is the number behind this card?</h2>
+          <p id="prompt"></p>
         </div>
         <div class="card-back" id="hidden-number-back">
-          <h2 id="hidden-number">?</h2>
+          <h2 id="hidden-number"></h2>
         </div>
       </div>
     </div>
 
     <div class="options">
-      <button class="option" onclick="checkAnswer(this)">73</button>
-      <button class="option" onclick="checkAnswer(this)">29</button>
-      <button class="option" onclick="checkAnswer(this)">25</button>
+      <button class="option" onclick="checkAnswer(this)"></button>
+      <button class="option" onclick="checkAnswer(this)"></button>
+      <button class="option" onclick="checkAnswer(this)"></button>
+      <button class="option" onclick="checkAnswer(this)"></button>
+
     </div>
 
     <button id="hint-btn" onclick="showHint()">Need a hint?</button>
-    <button onclick="generateQuestion()">Next Question</button>
+    <button id="next-btn" onclick="generateQuestion()">Next Question</button>
 
     <p id="hint"></p>
     <p id="streak">Current Streak: 0</p>

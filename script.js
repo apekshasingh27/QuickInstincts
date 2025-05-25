@@ -1,104 +1,141 @@
-let correctAnswer,correctType;
-const optionButtons = document.querySelectorAll(".option");
-const card = document.getElementById('card');
-let streak = 0;
+const imageData = {
+  animals: ["cat", "dog", "duck", "hamster", "horse"],
+  fruits: ["apple", "banana", "grapes", "mango", "peach"]
+};
 
-const questionTypes = [
-  {
-    type: "number",
-    prompt: "What is the number behind this card?",
-    pool: () => getRandomInt(10, 100).toString()
-  },
-  {
-    type: "animal",
-    prompt: "What is the animal behind this card?",
-    pool: () => getRandomFromArray(["Cat", "Dog", "Hamster", "Horse", "Duck"])
-  },
-  {
-    type: "fruit",
-    prompt: "What is the fruit behind this card?",
-    pool: () => getRandomFromArray(["Apple", "Banana", "Mango", "Grapes", "Peach"])
-  },
-  {
+const colorData = ["red", "blue", "green", "yellow"];
+const numberData = [10, 20, 30, 40];
+
+// Utility to shuffle an array
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+let currentQuestion;
+let streak = 0;
+const optionButtons = Array.from(document.querySelectorAll(".option"));
+
+function getRandomImageQuestion(type) {
+  const pool = imageData[type];
+  const correct = pool[Math.floor(Math.random() * pool.length)];
+
+  // Pick 3 wrong answers
+  const wrongs = pool.filter(item => item !== correct);
+  shuffleArray(wrongs);
+  
+  const options = [correct, ...wrongs.slice(0, Math.min(3, wrongs.length))];
+  while (options.length < 4) {
+    const candidate = pool[Math.floor(Math.random() * pool.length)];
+    if (!options.includes(candidate)) options.push(candidate);
+  }
+
+
+  shuffleArray(options);
+
+  return {
+    type: type,
+    prompt: `What is the ${type.slice(0, -1)} behind this card?`,
+    options: options,
+    answer: correct,
+    display: `images/${type}/${correct}.jpg`
+  };
+}
+
+function getRandomColorQuestion() {
+  const correct = colorData[Math.floor(Math.random() * colorData.length)];
+  const wrongs = colorData.filter(c => c !== correct);
+  shuffleArray(wrongs);
+  const options = [correct, ...wrongs.slice(0, Math.min(3, wrongs.length))];
+  while (options.length < 4) {
+    const candidate = colorData[Math.floor(Math.random() * colorData.length)];
+    if (!options.includes(candidate)) options.push(candidate);
+  }
+
+  shuffleArray(options);
+
+  return {
     type: "color",
     prompt: "What is the color behind this card?",
-    pool: () => getRandomFromArray(["Red", "Blue", "Green", "Yellow", "Purple"])
-  }
-];
-
-function isPrime(num) {
-  if (num < 2) return false;
-  for (let i = 2; i <= Math.sqrt(num); i++) {
-    if (num % i === 0) return false;
-  }
-  return true;
+    options: options,
+    answer: correct,
+    display: correct
+  };
 }
 
-function generateQuestion() {
-  // Randomly choose a question type
-  const q = getRandomFromArray(questionTypes);
-  currentType = q.type;
-  correctAnswer = q.pool();
+function getRandomNumberQuestion() {
+  const correct = numberData[Math.floor(Math.random() * numberData.length)];
+  const wrongs = numberData.filter(n => n !== correct);
+  shuffleArray(wrongs);
+  const options = [correct, ...wrongs.slice(0, Math.min(3, wrongs.length))];
 
-  // Generate fake options
-  let options = [correctAnswer];
-  while (options.length < 3) {
-    const fake = q.pool();
-    if (!options.includes(fake)) options.push(fake);
+  while (options.length < 4) {
+    const candidate = numberData[Math.floor(Math.random() * numberData.length)];
+    if (!options.includes(candidate)) options.push(candidate);
   }
-
-  // Shuffle and display
   shuffleArray(options);
+
+  return {
+    type: "number",
+    prompt: "What number is behind this card?",
+    options: options,
+    answer: correct,
+    display: correct
+  };
+}
+
+function generateRandomQuestion() {
+  const types = ["animals", "fruits", "color", "number"];
+  const type = types[Math.floor(Math.random() * types.length)];
+
+  switch (type) {
+    case "animals":
+    case "fruits":
+      return getRandomImageQuestion(type);
+    case "color":
+      return getRandomColorQuestion();
+    case "number":
+      return getRandomNumberQuestion();
+  }
+}
+
+function loadQuestion() {
+  document.getElementById("card").classList.remove("is-flipped");
+  document.getElementById("hidden-number").innerHTML = "";
+  document.querySelector(".card-back").style.backgroundColor = "#fff";
+
+  currentQuestion = generateRandomQuestion();
+  document.getElementById("prompt").textContent = currentQuestion.prompt;
+
   optionButtons.forEach((btn, i) => {
-    btn.textContent = options[i];
+    btn.textContent = currentQuestion.options[i];
     btn.disabled = false;
   });
-
-  // Set prompt
-  document.getElementById("hidden-number-front").querySelector("h2").textContent = q.prompt;
-  document.getElementById("hidden-number").textContent = "?";
-  document.getElementById("hint").textContent = "";
-  card.classList.remove('is-flipped');
-}
-
-
-// ✨ Utility: Random int in range
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// ✨ Utility: Shuffle array
-function shuffleArray(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
 }
 
 function checkAnswer(button) {
-  const selected = parseInt(button.textContent);
+  const selected = button.textContent;
+  const displayElement = document.getElementById("hidden-number");
 
-  if (selected === correctAnswer) {
-    streak++;
+  if (currentQuestion.type === "animals" || currentQuestion.type === "fruits") {
+    const img = document.createElement("img");
+    img.src = currentQuestion.display;
+    img.alt = currentQuestion.answer;
+    img.style.maxWidth = "100px";
+    displayElement.innerHTML = "";
+    displayElement.appendChild(img);
+  } else if (currentQuestion.type === "color") {
+    displayElement.innerHTML = currentQuestion.answer;
+    document.querySelector(".card-back").style.backgroundColor = currentQuestion.display;
   } else {
-    streak = 0; // reset streak on wrong answer
+    displayElement.textContent = currentQuestion.display;
   }
 
-  // Update streak display
-  document.getElementById("streak").textContent = `Current Streak: ${streak}`;
-
-  // Show number and flip card
-  document.getElementById("hidden-number").textContent = correctAnswer;
   document.getElementById("card").classList.add("is-flipped");
 
-  // Disable all option buttons
-  optionButtons.forEach((btn) => (btn.disabled = true));
-}function checkAnswer(button) {
-  const selected = button.textContent;
-  document.getElementById("hidden-number").textContent = correctAnswer;
-  document.getElementById("card").classList.add("is-flipped");
-
-  if (selected === correctAnswer) {
+  if (selected == currentQuestion.answer) {
     streak++;
   } else {
     streak = 0;
@@ -109,21 +146,18 @@ function checkAnswer(button) {
 }
 
 
+document.getElementById("next-btn").addEventListener("click", loadQuestion);
+document.getElementById("hint-btn").addEventListener("click", () => {
+  alert(`Hint: The answer starts with "${currentQuestion.answer.toString()[0]}"`);
+});
 
-// 💡 Hint logic
-function showHint() {
-  const hint = document.getElementById("hint");
+// Start with a question
+loadQuestion();
 
-  if (isPrime(correctAnswer)) {
-    hint.textContent = "Hint: It's a prime number.";
-  } else {
-    hint.textContent = "Hint: It's not a prime number.";
-  }
-}
+//if (!window.listenersAttached) {
+//  optionButtons.forEach(button => {
+//    button.addEventListener("click", () => checkAnswer(button));
+//  });
+//  window.listenersAttached = true;
+//}
 
-// 📦 Call generateQuestion when page loads
-window.onload = generateQuestion;
-
-function getRandomFromArray(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
