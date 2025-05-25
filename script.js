@@ -1,8 +1,30 @@
-let correctAnswer;
+let correctAnswer,correctType;
 const optionButtons = document.querySelectorAll(".option");
 const card = document.getElementById('card');
 let streak = 0;
 
+const questionTypes = [
+  {
+    type: "number",
+    prompt: "What is the number behind this card?",
+    pool: () => getRandomInt(10, 100).toString()
+  },
+  {
+    type: "animal",
+    prompt: "What is the animal behind this card?",
+    pool: () => getRandomFromArray(["Cat", "Dog", "Elephant", "Tiger", "Lion"])
+  },
+  {
+    type: "fruit",
+    prompt: "What is the fruit behind this card?",
+    pool: () => getRandomFromArray(["Apple", "Banana", "Mango", "Grapes", "Peach"])
+  },
+  {
+    type: "color",
+    prompt: "What is the color behind this card?",
+    pool: () => getRandomFromArray(["Red", "Blue", "Green", "Yellow", "Purple"])
+  }
+];
 
 function isPrime(num) {
   if (num < 2) return false;
@@ -12,39 +34,33 @@ function isPrime(num) {
   return true;
 }
 
-
 function generateQuestion() {
-  correctAnswer = getRandomInt(10, 100);  // pick any range
+  // Randomly choose a question type
+  const q = getRandomFromArray(questionTypes);
+  currentType = q.type;
+  correctAnswer = q.pool();
 
-  //fake but different options
-  let wrong1, wrong2;
-  do {
-    wrong1 = correctAnswer + getRandomInt(-10, 10);
-  } while (wrong1 === correctAnswer || wrong1 <= 0);
+  // Generate fake options
+  let options = [correctAnswer];
+  while (options.length < 3) {
+    const fake = q.pool();
+    if (!options.includes(fake)) options.push(fake);
+  }
 
-  do {
-    wrong2 = correctAnswer + getRandomInt(-10, 10);
-  } while (wrong2 === correctAnswer || wrong2 === wrong1 || wrong2 <= 0);
-
-  // 3. shuffle all options
-  let options = [correctAnswer, wrong1, wrong2];
+  // Shuffle and display
   shuffleArray(options);
-
-  // 4. Set the buttons
-  optionButtons.forEach((btn, index) => {
-    btn.textContent = options[index];
+  optionButtons.forEach((btn, i) => {
+    btn.textContent = options[i];
     btn.disabled = false;
   });
 
-   card.classList.remove('is-flipped');
-   document.getElementById("hidden-number").textContent = "?";
-   document.getElementById("hint").textContent = "";
-  // clear hidden number and hint
-//document.getElementById('hidden-number-back').style.display = 'none';
-//document.getElementById('hidden-number-front').style.display = 'block';
-document.getElementById("streak").textContent = `Current Streak: ${streak}`;
-
+  // Set prompt
+  document.getElementById("hidden-number-front").querySelector("h2").textContent = q.prompt;
+  document.getElementById("hidden-number").textContent = "?";
+  document.getElementById("hint").textContent = "";
+  card.classList.remove('is-flipped');
 }
+
 
 // ✨ Utility: Random int in range
 function getRandomInt(min, max) {
@@ -77,6 +93,19 @@ function checkAnswer(button) {
 
   // Disable all option buttons
   optionButtons.forEach((btn) => (btn.disabled = true));
+}function checkAnswer(button) {
+  const selected = button.textContent;
+  document.getElementById("hidden-number").textContent = correctAnswer;
+  document.getElementById("card").classList.add("is-flipped");
+
+  if (selected === correctAnswer) {
+    streak++;
+  } else {
+    streak = 0;
+  }
+
+  document.getElementById("streak").textContent = `Current Streak: ${streak}`;
+  optionButtons.forEach(btn => btn.disabled = true);
 }
 
 
@@ -94,3 +123,7 @@ function showHint() {
 
 // 📦 Call generateQuestion when page loads
 window.onload = generateQuestion;
+
+function getRandomFromArray(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
