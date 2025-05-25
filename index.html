@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Intuition Tester</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-container">
+    <div class="card" id="card">
+      <div class="card-inner" id="card-inner">
+        <div class="card-front" id="hidden-number-front">
+          <h2>What is the number behind this card?</h2>
+        </div>
+        <div class="card-back" id="hidden-number-back">
+          <h2 id="hidden-number">?</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="options">
+      <button class="option" onclick="checkAnswer(this)">73</button>
+      <button class="option" onclick="checkAnswer(this)">29</button>
+      <button class="option" onclick="checkAnswer(this)">25</button>
+    </div>
+
+    <button id="hint-btn" onclick="showHint()">Need a hint?</button>
+    <button onclick="generateQuestion()">Next Question</button>
+
+    <p id="hint"></p>
+    <p id="streak">Current Streak: 0</p>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
