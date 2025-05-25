@@ -12,7 +12,7 @@ const questionTypes = [
   {
     type: "animal",
     prompt: "What is the animal behind this card?",
-    pool: () => getRandomFromArray(["Cat", "Dog", "Elephant", "Tiger", "Lion"])
+    pool: () => getRandomFromArray(["Cat", "Dog", "Hamster", "Horse", "Duck"])
   },
   {
     type: "fruit",
